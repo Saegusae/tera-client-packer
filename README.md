@@ -28,3 +28,9 @@ I've been messing with how [Menma's TERA](https://discord.gg/mtdream) manages in
 
 - Files are not compressed even though they planned for implementation (evident through their manifest having a flag field for compression) resulting in an increased size of 20.57% thats give or take 9~GB more data to download. While currently also not implemented in my solution I plan to support Gzip and/or LZMA compression in the near future.
 - Source files are fragmented in a way that they can be split between multiple package files in an attempt to make parts equal in byte length. This is acceptable in most cases but severely hurts multi-threaded unpacking performance as workloads have to wait the write-lock on the split destination file when you are processing (unpacking) these files from packages.
+
+## Multi-thread Implementation Details
+
+I currently have a working prototype for multi-threaded io and compression but it could be better optimized. The program reads files sequentially and spawns a thread every `package-size` bytes reached while passing the read buffer to that thread. So for memory optimization purposes, the program currently waits until a thread pool of worker limit \* 2 is in the queue (so if I have a worker count of 12 set up, the queue will have 24 parts read and 12 concurrently compressing/writing).
+
+Probably could have done it much more efficiently but this is heaps better than running write operations sequentially.
