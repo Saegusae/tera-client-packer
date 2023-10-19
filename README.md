@@ -1,6 +1,6 @@
 # tera-client-packer
 
-A CLI utility to compress and fragment game client files for TERA Online.
+A CLI utility to compress and fragment game client files for TERA Online. Allows users to download and unpack the game faster, saving bandwidth and time.
 
 ## How does it work?
 
@@ -11,12 +11,15 @@ Arguments:
   <INPUT_DIR> - Parent directory where the client files are located
 
 Options:
+  -w, --workers <usize>             Worker count                              [default: 8]
   -n, --package-name <string>       Output package name                       [default: client]
   -e, --package-extension <string>  Output package extension                  [default: cabx]
   -s, --package-size <u64>          Output fragment size in MB                [default: 500]
   -o, --output-dir <Path>           Path where package files will be dumped   [default: ./packed]
   -c, --compress                    Flag for compression (unused)
 ```
+
+The program reads `package-size` amount of data for every thread
 
 ## What does it do?
 
@@ -34,3 +37,13 @@ I've been messing with how [Menma's TERA](https://discord.gg/mtdream) manages in
 I currently have a working prototype for multi-threaded io and compression but it could be better optimized. The program reads files sequentially and spawns a thread every `package-size` bytes reached while passing the read buffer to that thread. So for memory optimization purposes, the program currently waits until a thread pool of worker limit \* 2 is in the queue (so if I have a worker count of 12 set up, the queue will have 24 parts read and 12 concurrently compressing/writing).
 
 Probably could have done it much more efficiently but this is heaps better than running write operations sequentially.
+
+## Benchmarks
+
+All tests were run on client files for patch 100.02, clean Gameforge release with ReleaseRevision.txt md5 hash `0396410868EDE6E05F8DEDC5142E93EB` and `package-size` option set to `500mb`
+
+| Runtime                     | Compression    | Duration | Result            |
+| --------------------------- | -------------- | -------- | ----------------- |
+| Single-Threaded             | No Compression | 1m37s    | 66.9 GB (100.00%) |
+| Single-Threaded             | Deflate        | 2h32m44s | 59.5 GB (88.94%)  |
+| Multi-Threaded (16 Threads) | Gzip           | 36m08s   | 58.4 GB (87.29%)  |
