@@ -31,6 +31,9 @@ pub enum Commands {
     #[arg(long, short, default_value_t = false)]
     compress: bool,
 
+    #[arg(long, short, default_value_t = 8)]
+    workers: usize,
+
     input_dir: PathBuf,
   },
 
@@ -42,6 +45,9 @@ pub enum Commands {
 
     #[arg(long, short, default_value = "manifest.json")]
     manifest: PathBuf,
+
+    #[arg(long, short, default_value_t = 8)]
+    workers: usize,
 
     output_dir: PathBuf,
   },

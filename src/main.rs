@@ -1,6 +1,6 @@
-use cli::{Cli, Commands, Parser};
-
 mod cli;
+
+use cli::{Cli, Commands, Parser};
 
 fn main() {
   let args = Cli::parse();
@@ -12,11 +12,13 @@ fn main() {
       package_size,
       output_dir,
       compress,
+      workers,
       input_dir,
     } => unimplemented!(),
     Commands::Unpack {
       input_dir,
       manifest,
+      workers,
       output_dir,
     } => unimplemented!(),
   }
