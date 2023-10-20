@@ -1,6 +1,6 @@
 # tera-client-packer
 
-A CLI utility to compress and fragment game client files for TERA Online. Allows users to download and unpack the game faster, saving bandwidth and time.
+A CLI utility to compress and fragment game client files for TERA Online. Allows users to download and unpack the game faster, saving bandwidth and time. The tool also exposes a rust library to perform the same actions programatically.
 
 ## How does it work?
 
