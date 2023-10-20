@@ -56,11 +56,14 @@ All tests were run on client files for patch 100.02, clean Gameforge release wit
 
 ### Packer
 
-| Runtime                     | Compression    | Duration | Result            |
-| --------------------------- | -------------- | -------- | ----------------- |
-| Single-Threaded             | No Compression | 1m37s    | 66.9 GB (100.00%) |
-| Single-Threaded             | Deflate        | 2h32m44s | 59.5 GB (88.94%)  |
-| Multi-Threaded (16 Threads) | Gzip (Lv. 6)   | 37m18s   | 58.6 GB (87.29%)  |
+| Runtime                        | Compression     | Duration  | Result            |
+| ------------------------------ | --------------- | --------- | ----------------- |
+| Single-Threaded                | No Compression  | 1m37s     | 66.9 GB (100.00%) |
+| Single-Threaded                | Deflate         | 2h32m44s  | 59.5 GB (88.94%)  |
+| Multi-Threaded (16 Threads)    | Gzip (Defaults) | 37m18s    | 58.6 GB (87.29%)  |
+| \* Multi-Threaded (16 Threads) | Gzip (Defaults) | **3m33s** | 58.6 GB (87.29%)  |
+
+`* Optimised release target build`
 
 ### Unpacker
 
