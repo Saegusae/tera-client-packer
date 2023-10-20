@@ -2,10 +2,6 @@ use cli::{Cli, Commands, Parser};
 
 mod cli;
 
-pub mod manifest;
-pub mod packer;
-pub mod unpacker;
-
 fn main() {
   let args = Cli::parse();
 
