@@ -1,5 +1,7 @@
 mod test;
 
+use crate::manifest;
+
 pub struct Unpacker {}
 
 impl Default for Unpacker {

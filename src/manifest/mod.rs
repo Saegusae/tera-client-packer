@@ -40,6 +40,10 @@ impl Default for Manifest {
 }
 
 impl Manifest {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
   pub fn from_file<P: AsRef<Path>>(path: P) -> Self {
     let file = fs::File::open(path).unwrap();
     serde_json::from_reader::<fs::File, Self>(file).unwrap()

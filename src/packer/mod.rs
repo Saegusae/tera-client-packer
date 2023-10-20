@@ -1,5 +1,7 @@
 mod test;
 
+use crate::manifest;
+
 pub struct Packer {}
 
 impl Default for Packer {
