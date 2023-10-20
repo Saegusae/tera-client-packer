@@ -19,7 +19,19 @@ Options:
   -c, --compress                    Flag for compression (unused)
 ```
 
-The program reads `package-size` amount of data for every thread
+```
+tera-client-packer unpack [OPTIONS] <OUTPUT_DIR>
+
+Arguments:
+  <OUTPUT_DIR> - Top Level directory where the client files will be unpacked
+
+Options:
+  -i, --input-dir <Path>  Input directory where package files are contained [default: ./packed]
+  -m, --manifest <Path>   Define a custom manifest file for unpacking       [default: ./_manifest.json]
+  -w, --workers <usize>   Thread count for multithreaded use                [default: 8]
+```
+
+The program reads around `package-size * 2` amount of data for every thread, so if package size is set to `500mb` the total memory usage for **8 workers** will be around `8-10 GB`.
 
 ## What does it do?
 
@@ -42,8 +54,16 @@ Probably could have done it much more efficiently but this is heaps better than 
 
 All tests were run on client files for patch 100.02, clean Gameforge release with ReleaseRevision.txt md5 hash `0396410868EDE6E05F8DEDC5142E93EB` and `package-size` option set to `500mb`
 
+### Packer
+
 | Runtime                     | Compression    | Duration | Result            |
 | --------------------------- | -------------- | -------- | ----------------- |
 | Single-Threaded             | No Compression | 1m37s    | 66.9 GB (100.00%) |
 | Single-Threaded             | Deflate        | 2h32m44s | 59.5 GB (88.94%)  |
-| Multi-Threaded (16 Threads) | Gzip           | 36m08s   | 58.4 GB (87.29%)  |
+| Multi-Threaded (16 Threads) | Gzip (Lv. 6)   | 37m18s   | 58.6 GB (87.29%)  |
+
+### Unpacker
+
+| Runtime                     | Compression  | Duration |
+| --------------------------- | ------------ | -------- |
+| Multi-Threaded (16 Threads) | Gzip (Lv. 6) | 5m50s    |
