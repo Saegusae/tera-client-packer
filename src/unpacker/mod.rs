@@ -22,10 +22,7 @@ impl Unpacker {
   pub fn new(worker_count: usize) -> Self {
     Self {
       worker_count,
-      workers: ThreadPoolBuilder::new()
-        .num_threads(worker_count)
-        .build()
-        .unwrap(),
+      workers: ThreadPoolBuilder::new().num_threads(worker_count).build().unwrap(),
     }
   }
 

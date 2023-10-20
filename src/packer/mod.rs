@@ -55,10 +55,7 @@ impl<'a> Packer<'a> {
       package_ext,
       package_size,
       worker_count,
-      workers: ThreadPoolBuilder::new()
-        .num_threads(worker_count)
-        .build()
-        .unwrap(),
+      workers: ThreadPoolBuilder::new().num_threads(worker_count).build().unwrap(),
     }
   }
 
@@ -90,12 +87,7 @@ impl<'a> Packer<'a> {
 
       while let Some(entry) = sources.next() {
         let path = entry.path();
-        let key = path
-          .strip_prefix(&source_input)
-          .unwrap()
-          .to_str()
-          .unwrap()
-          .to_string();
+        let key = path.strip_prefix(&source_input).unwrap().to_str().unwrap().to_string();
 
         let mut file = File::open(path).unwrap();
         let bytes = file.read_to_end(&mut buffer).unwrap();
@@ -133,19 +125,16 @@ impl<'a> Packer<'a> {
         }
       }
 
-      manifest
-        .set_total_size(total_size)
-        .write("./_manifest.json");
+      manifest.set_total_size(total_size).write("./_manifest.json");
     });
 
     self.workers.broadcast(|_| {
       while let Ok((idx, bytes)) = rx.recv() {
         let mut data: &[u8] = &*bytes;
 
-        let output_path = self.output_dir.join(format!(
-          "{}.{:03}.{}",
-          self.package_name, idx, self.package_ext
-        ));
+        let output_path = self
+          .output_dir
+          .join(format!("{}.{:03}.{}", self.package_name, idx, self.package_ext));
 
         let file = File::create(output_path).unwrap();
         let mut encoder = GzEncoder::new(file, Compression::default());
