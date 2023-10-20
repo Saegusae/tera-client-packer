@@ -41,14 +41,14 @@ This is a tool that packs game client files for distribution through a launcher 
 
 I've been messing with how [Menma's TERA](https://discord.gg/mtdream) manages installation and patching through their client while learning the Rust language. Noticed a few caveats with their current implementation that puzzled me:
 
-- Files are not compressed even though they planned for implementation (evident through their manifest having a flag field for compression) resulting in an increased size of 20.57% thats give or take 9~GB more data to download. While currently also not implemented in my solution I plan to support Gzip and/or LZMA compression in the near future.
+- Files are not compressed even though they planned for implementation (evident through their manifest having a flag field for compression) resulting in an increased size of 20.57% thats give or take 9~GB more data to download. ~~While currently also not implemented in my solution I plan to support Gzip and/or LZMA compression in the near future~~ Gzip compression is implemented and enabled default now.
 - Source files are fragmented in a way that they can be split between multiple package files in an attempt to make parts equal in byte length. This is acceptable in most cases but severely hurts multi-threaded unpacking performance as workloads have to wait the write-lock on the split destination file when you are processing (unpacking) these files from packages.
 
 ## Multi-thread Implementation Details
 
-I currently have a working prototype for multi-threaded io and compression but it could be better optimized. The program reads files sequentially and spawns a thread every `package-size` bytes reached while passing the read buffer to that thread. So for memory optimization purposes, the program currently waits until a thread pool of worker limit \* 2 is in the queue (so if I have a worker count of 12 set up, the queue will have 24 parts read and 12 concurrently compressing/writing).
+I currently have a working prototype for multi-threaded io and compression but it could be better optimized. The program reads files sequentially and stores the buffer for processing every `package-size` bytes reached. For memory optimization purposes, the program manages a thread pool of `worker_count + 1` and a buffer queue length of `worker_count`. So the amount of memory used at all times will stay consistent at around `worker_count * package_size * 2` which of course includes the stored task buffer and concurrently processing byte streams.
 
-Probably could have done it much more efficiently but this is heaps better than running write operations sequentially.
+Probably could have done it more efficient with memory using some other practice but this is heaps better than running write operations sequentially.
 
 ## Benchmarks
 
@@ -76,3 +76,4 @@ All tests were run on client files for patch 100.02, clean Gameforge release wit
 - Progress bar is very uninteractive and often appears as if the program hanged even though it hasn't.
 - There is no enforcement of memory limits, the program generally consumes around `package-size * workers * 2.10` MB of memory, use these options with caution.
 - No current package hashing functionality, which is a must if intending to distribute the output.
+- Output directory or name of the manifest file is currently not customizable, it defaults to `cwd` and `_manifest.json` respectively
