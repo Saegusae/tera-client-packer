@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
-use serde::{Deserialize, Serialize};
 
 use std::path::PathBuf;
 
+pub mod manifest;
 pub mod packer;
 pub mod unpacker;
 
@@ -17,6 +17,7 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Commands {
   #[command(arg_required_else_help = true)]
+  #[command(name = "pack", about = "Packs client files in given directory", long_about = None)]
   Pack {
     #[arg(long, short = 'n', default_value = "client")]
     package_name: String,
@@ -37,6 +38,7 @@ enum Commands {
   },
 
   #[command(arg_required_else_help = true)]
+  #[command(name = "unpack", about = "Unpacks client files to given directory", long_about = None)]
   Unpack {
     #[arg(long, short)]
     input_dir: PathBuf,
@@ -46,30 +48,6 @@ enum Commands {
 
     output_dir: PathBuf,
   },
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Manifest {
-  total_size: u64,
-  compressed: bool,
-  parts: i32,
-  package_list: Vec<PackageEntry>,
-  revision: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct PackageEntry {
-  name: String,
-  package_size: u64,
-  hash: Option<String>,
-  file_list: Vec<FileEntry>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct FileEntry {
-  key: String,
-  offset: u64,
-  size: u64,
 }
 
 fn main() {
