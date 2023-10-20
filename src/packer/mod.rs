@@ -1,3 +1,5 @@
+mod test;
+
 pub struct Packer {}
 
 impl Default for Packer {

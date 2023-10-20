@@ -1,3 +1,5 @@
+mod test;
+
 pub struct Unpacker {}
 
 impl Default for Unpacker {
