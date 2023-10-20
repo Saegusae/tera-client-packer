@@ -154,7 +154,6 @@ impl<'a> Packer<'a> {
     self.workers.broadcast(|_| {
       while let Ok((idx, bytes)) = rx.recv() {
         let mut data: &[u8] = &*bytes;
-        let len = data.len();
 
         let output_path = self
           .output_dir
