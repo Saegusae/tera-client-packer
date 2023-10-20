@@ -1,8 +1,11 @@
 mod test;
 
-use crate::manifest;
+use crate::manifest::Manifest;
 
+use crossbeam::channel;
 use rayon::{ThreadPool, ThreadPoolBuilder};
+
+use std::thread;
 
 pub struct Unpacker {
   worker_count: usize,
@@ -26,5 +29,13 @@ impl Unpacker {
     }
   }
 
-  pub fn unpack(&self) {}
+  pub fn unpack(&self) {
+    let (tx, rx) = channel::bounded::<String>(self.worker_count);
+
+    let manager = thread::spawn(move || {});
+
+    self.workers.broadcast(|_| while let Ok(_package_name) = rx.recv() {});
+
+    manager.join().unwrap();
+  }
 }
