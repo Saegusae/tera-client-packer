@@ -23,13 +23,10 @@ pub enum Commands {
     package_extension: String,
 
     #[arg(long, short = 's', default_value_t = 500)]
-    package_size: u64,
+    package_size: usize,
 
     #[arg(long, short, default_value = "packed")]
     output_dir: PathBuf,
-
-    #[arg(long, short, default_value_t = false)]
-    compress: bool,
 
     #[arg(long, short, default_value_t = 8)]
     workers: usize,

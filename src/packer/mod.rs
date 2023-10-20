@@ -5,6 +5,7 @@ use crate::manifest::*;
 use crossbeam::channel;
 use flate2::write::GzEncoder;
 use flate2::Compression;
+use indicatif::{ProgressBar, ProgressStyle};
 use rayon::{ThreadPool, ThreadPoolBuilder};
 use walkdir::WalkDir;
 
@@ -74,6 +75,13 @@ impl<'a> Packer<'a> {
         .filter(|entry| entry.path().is_file())
         .peekable();
 
+      let rdr_prog = ProgressBar::new(0);
+
+      let rdr_style = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
+        .unwrap()
+        .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
+      rdr_prog.set_style(rdr_style);
+
       let mut manifest = Manifest::default();
 
       let mut buffer = Vec::<u8>::new();
@@ -85,12 +93,18 @@ impl<'a> Packer<'a> {
       let mut processed_bytes: usize = 0;
       let mut file_offset: u64 = 0;
 
+      rdr_prog.set_prefix(format!("[Package {:03}]", package_index));
+
       while let Some(entry) = sources.next() {
         let path = entry.path();
         let key = path.strip_prefix(&source_input).unwrap().to_str().unwrap().to_string();
 
+        rdr_prog.set_message(format!("{}", key));
+
         let mut file = File::open(path).unwrap();
         let bytes = file.read_to_end(&mut buffer).unwrap();
+
+        rdr_prog.inc(1);
 
         file_list.push(FileEntry {
           key,
@@ -102,6 +116,13 @@ impl<'a> Packer<'a> {
         file_offset += bytes as u64 + 1;
 
         let next_file = sources.peek();
+        if next_file.is_none() {
+          rdr_prog.finish_with_message(format!(
+            "Finished reading client files. Expected package count: {}",
+            package_index
+          ));
+        }
+
         if next_file.is_none() || processed_bytes >= package_size {
           let slice = buffer.clone();
           let packet = (package_index, slice);
@@ -121,6 +142,8 @@ impl<'a> Packer<'a> {
           processed_bytes = 0;
 
           tx.send(packet).unwrap();
+          rdr_prog.set_prefix(format!("[Package {:03}]", package_index));
+
           package_index += 1;
         }
       }
@@ -131,6 +154,7 @@ impl<'a> Packer<'a> {
     self.workers.broadcast(|_| {
       while let Ok((idx, bytes)) = rx.recv() {
         let mut data: &[u8] = &*bytes;
+        let len = data.len();
 
         let output_path = self
           .output_dir
@@ -139,7 +163,7 @@ impl<'a> Packer<'a> {
         let file = File::create(output_path).unwrap();
         let mut encoder = GzEncoder::new(file, Compression::default());
 
-        io::copy(&mut data, &mut encoder).unwrap();
+        let bytes = io::copy(&mut data, &mut encoder).unwrap();
       }
     });
 
