@@ -53,4 +53,13 @@ impl Manifest {
     let file = fs::File::create(path).unwrap();
     serde_json::to_writer(file, &self).unwrap();
   }
+
+  pub fn set_total_size(&mut self, total_size: u64) -> &Self {
+    self.total_size = total_size;
+    self
+  }
+
+  pub fn add_package(&mut self, package: PackageEntry) {
+    self.package_list.push(package);
+  }
 }
