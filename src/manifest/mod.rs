@@ -31,7 +31,7 @@ impl Default for Manifest {
   fn default() -> Self {
     Self {
       package_list: Vec::new(),
-      compressed: false,
+      compressed: true,
       parts: 0,
       revision: 0,
       total_size: 0,
@@ -61,5 +61,6 @@ impl Manifest {
 
   pub fn add_package(&mut self, package: PackageEntry) {
     self.package_list.push(package);
+    self.parts += 1;
   }
 }

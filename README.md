@@ -75,3 +75,4 @@ All tests were run on client files for patch 100.02, clean Gameforge release wit
 
 - Progress bar is very uninteractive and often appears as if the program hanged even though it hasn't.
 - There is no enforcement of memory limits, the program generally consumes around `package-size * workers * 2.10` MB of memory, use these options with caution.
+- No current package hashing functionality, which is a must if intending to distribute the output.
