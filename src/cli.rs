@@ -25,6 +25,9 @@ pub enum Commands {
     #[arg(long, short = 's', default_value_t = 500)]
     package_size: usize,
 
+    #[arg(name = "manifest", short, long, default_value = "packed/_manifest.json")]
+    manifest_path: PathBuf,
+
     #[arg(long, short, default_value = "packed")]
     output_dir: PathBuf,
 
@@ -37,11 +40,11 @@ pub enum Commands {
   #[command(arg_required_else_help = true)]
   #[command(name = "unpack", about = "Unpacks client files to given directory", long_about = None)]
   Unpack {
-    #[arg(long, short)]
-    input_dir: PathBuf,
+    #[arg(name = "manifest", short, long, default_value = "packed/_manifest.json")]
+    manifest_path: PathBuf,
 
-    #[arg(long, short, default_value = "manifest.json")]
-    manifest: PathBuf,
+    #[arg(long, short, default_value = "packed")]
+    input_dir: PathBuf,
 
     #[arg(long, short, default_value_t = 8)]
     workers: usize,

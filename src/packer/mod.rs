@@ -24,6 +24,7 @@ pub struct Packer<'a> {
   package_ext: String,
   package_size: usize,
 
+  manifest_path: &'a Path,
   input_dir: &'a Path,
   output_dir: &'a Path,
 }
@@ -31,13 +32,16 @@ pub struct Packer<'a> {
 impl<'a> Default for Packer<'a> {
   fn default() -> Self {
     Self {
-      input_dir: Path::new("."),
-      output_dir: Path::new("packed"),
+      worker_count: 0,
+      workers: ThreadPoolBuilder::new().build().unwrap(),
+
       package_name: String::from("client"),
       package_ext: String::from("cabx"),
       package_size: 500 * 1024_usize.pow(2),
-      worker_count: 0,
-      workers: ThreadPoolBuilder::new().build().unwrap(),
+
+      manifest_path: Path::new("packed/_manifest.json"),
+      input_dir: Path::new("."),
+      output_dir: Path::new("packed"),
     }
   }
 }
@@ -46,19 +50,23 @@ impl<'a> Packer<'a> {
   pub fn new(
     input_dir: &'a Path,
     output_dir: &'a Path,
+    manifest_path: &'a Path,
     package_name: String,
     package_ext: String,
     package_size: usize,
     worker_count: usize,
   ) -> Self {
     Self {
-      input_dir,
-      output_dir,
+      worker_count,
+      workers: ThreadPoolBuilder::new().num_threads(worker_count).build().unwrap(),
+
       package_name,
       package_ext,
       package_size,
-      worker_count,
-      workers: ThreadPoolBuilder::new().num_threads(worker_count).build().unwrap(),
+
+      manifest_path,
+      input_dir,
+      output_dir,
     }
   }
 
@@ -69,6 +77,7 @@ impl<'a> Packer<'a> {
     let package_size = self.package_size;
 
     let (package_name, package_ext) = (self.package_name.clone(), self.package_ext.clone());
+    let manifest_path = self.manifest_path.to_owned();
 
     let manager = thread::spawn(move || {
       let mut sources = WalkDir::new(&source_input)
@@ -150,7 +159,7 @@ impl<'a> Packer<'a> {
         }
       }
 
-      manifest.set_total_size(total_size).write("./_manifest.json");
+      manifest.set_total_size(total_size).write(manifest_path);
     });
 
     self.workers.broadcast(|_| {
@@ -167,10 +176,10 @@ impl<'a> Packer<'a> {
         let mut tee = TeeReader::new(encoder, &mut hasher);
         let mut file = File::create(output_path).unwrap();
 
-        let bytes = io::copy(&mut tee, &mut file).unwrap();
+        let _bytes = io::copy(&mut tee, &mut file).unwrap();
         let hash = hasher.finalize();
 
-        println!("Package {}: {:?}", idx, hash);
+        println!("Package {}: {:x}", idx, hash);
       }
     });
 
