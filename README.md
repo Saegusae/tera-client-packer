@@ -16,7 +16,10 @@ Options:
   -e, --package-extension <string>  Output package extension                  [default: cabx]
   -s, --package-size <u64>          Output fragment size in MB                [default: 500]
   -o, --output-dir <Path>           Path where package files will be dumped   [default: ./packed]
-  -c, --compress                    Flag for compression (unused)
+  -m, --manifest <Path>             Path where manifest will be stored        [default: ./packed/_manifest.json]
+
+Example:
+  tera-client-packer pack -o ./out -m ./out/_manifest.json -w 16 -n client -s 500 -e bin ./GameClient
 ```
 
 ```
@@ -29,6 +32,9 @@ Options:
   -i, --input-dir <Path>  Input directory where package files are contained [default: ./packed]
   -m, --manifest <Path>   Define a custom manifest file for unpacking       [default: ./_manifest.json]
   -w, --workers <usize>   Thread count for multithreaded use                [default: 8]
+
+Example:
+  tera-client-packer unpack -i ./tmp -m ./tmp/_manifest.json -w 16 ./GameClient
 ```
 
 The program reads around `package-size * 2` amount of data for every thread, so if package size is set to `500mb` the total memory usage for **8 workers** will be around `8-10 GB`.
