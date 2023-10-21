@@ -45,7 +45,7 @@ impl Manifest {
   }
 
   pub fn from_file<P: AsRef<Path>>(path: P) -> Self {
-    let file = fs::File::open(path).unwrap();
+    let file = fs::File::open(path).expect("No manifest found in given path");
     serde_json::from_reader::<fs::File, Self>(file).unwrap()
   }
 

@@ -1,11 +1,12 @@
 mod test;
 
-use crate::manifest::Manifest;
+use crate::manifest::*;
 
 use crossbeam::channel;
+use flate2::read::GzDecoder;
 use rayon::{ThreadPool, ThreadPoolBuilder};
 
-use std::thread;
+use std::{fs::File, thread};
 
 pub struct Unpacker {
   worker_count: usize,
@@ -30,11 +31,20 @@ impl Unpacker {
   }
 
   pub fn unpack(&self) {
-    let (tx, rx) = channel::bounded::<String>(self.worker_count);
+    let (tx, rx) = channel::bounded::<PackageEntry>(self.worker_count);
+    let manifest = Manifest::from_file("./_manifest.json");
 
-    let manager = thread::spawn(move || {});
+    let manager = thread::spawn(move || {
+      for package in manifest.package_list {
+        tx.send(package).unwrap();
+      }
+    });
 
-    self.workers.broadcast(|_| while let Ok(_package_name) = rx.recv() {});
+    self.workers.broadcast(|_| {
+      while let Ok(_package) = rx.recv() {
+        let source = File::open(_package.name).unwrap();
+      }
+    });
 
     manager.join().unwrap();
   }

@@ -3,10 +3,12 @@ mod test;
 use crate::manifest::*;
 
 use crossbeam::channel;
-use flate2::write::GzEncoder;
+use flate2::read::GzEncoder;
 use flate2::Compression;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::{ThreadPool, ThreadPoolBuilder};
+use sha1::{Digest, Sha1};
+use tee::TeeReader;
 use walkdir::WalkDir;
 
 use std::fs::File;
@@ -153,16 +155,22 @@ impl<'a> Packer<'a> {
 
     self.workers.broadcast(|_| {
       while let Ok((idx, bytes)) = rx.recv() {
-        let mut data: &[u8] = &*bytes;
+        let data: &[u8] = &*bytes;
 
         let output_path = self
           .output_dir
           .join(format!("{}.{:03}.{}", self.package_name, idx, self.package_ext));
 
-        let file = File::create(output_path).unwrap();
-        let mut encoder = GzEncoder::new(file, Compression::default());
+        let encoder = GzEncoder::new(data, Compression::default());
+        let mut hasher = Sha1::new();
 
-        let bytes = io::copy(&mut data, &mut encoder).unwrap();
+        let mut tee = TeeReader::new(encoder, &mut hasher);
+        let mut file = File::create(output_path).unwrap();
+
+        let bytes = io::copy(&mut tee, &mut file).unwrap();
+        let hash = hasher.finalize();
+
+        println!("Package {}: {:?}", idx, hash);
       }
     });
 
